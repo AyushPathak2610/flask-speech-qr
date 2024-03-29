@@ -1,0 +1,20 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.progress {
+    height: 30px;
+}
+
+#result {
+    margin-top: 20px;
+}
+
+#progressBarInner {
+    background-color: #007bff; /* Bootstrap primary color */
+}
