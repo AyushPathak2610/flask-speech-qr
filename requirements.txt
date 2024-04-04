@@ -1,0 +1,10 @@
+flask
+base64
+re
+pandas
+wave
+requests
+qrcode
+Pillow
+matplotlib
+fpdf

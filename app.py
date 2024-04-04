@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect, url_for
 import base64
 import re
 import pandas as pd
@@ -6,8 +6,11 @@ import os
 import wave
 import requests
 import qrcode
-from PIL import Image
+from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
+from fpdf import FPDF
 
 app = Flask(__name__)
 
@@ -305,28 +308,45 @@ def generate_bill(sentence):
     print("Total cost:", total_cost, "Indian Rupees")
     print(bill)
     
-    df = pd.DataFrame(bill, columns=['Item', 'Quantity', 'Rate', 'Cost'])
-
-    # Capitalize the 'Item' column
-    df['Item'] = df['Item'].str.capitalize()
-
-    # Create a table visualization
-    plt.figure(figsize=(8, 4))
-    ax = plt.subplot(111, frame_on=False)  # No visible frame
-    ax.xaxis.set_visible(False)  # Hide x axis
-    ax.yaxis.set_visible(False)  # Hide y axis
-    table = plt.table(cellText=df.values, colLabels=df.columns, loc='center')
-    table.auto_set_font_size(False)
-    table.set_fontsize(10)
-    table.scale(1.2, 1.2)  # Adjust table size
-
-    # Add total cost to the bill
-    plt.text(0.9, 0.2, f"Total cost - ₹{total_cost}", horizontalalignment='right', fontsize=12, transform=ax.transAxes)
-
-    pdf_filename = 'bill.pdf'
-    plt.savefig(pdf_filename, bbox_inches='tight', pad_inches=0.05)
+    # Initialize PDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
     
-    return total_cost,"bill.pdf"
+    # Use a font that supports Unicode characters
+    # pdf.add_font("DejaVuSans", fname="fonts/DejaVuSans.ttf", uni=True)
+    # pdf.set_font("DejaVuSans", size=12)
+
+    # Add title
+    pdf.cell(200, 10, txt="Bill", ln=True, align="C")
+
+    # Add headers
+    pdf.cell(40, 10, "Item", 1, 0, "C")
+    pdf.cell(40, 10, "Quantity", 1, 0, "C")
+    pdf.cell(40, 10, "Rate", 1, 0, "C")
+    pdf.cell(40, 10, "Cost", 1, 1, "C")
+
+    # Add bill items
+    for item in bill:
+        pdf.cell(40, 10, str(item[0]), 1, 0, "C")
+        pdf.cell(40, 10, str(item[1]), 1, 0, "C")
+        pdf.cell(40, 10, str(item[2]), 1, 0, "C")
+        pdf.cell(40, 10, str(item[3]), 1, 1, "C")
+
+    # Add total cost
+    pdf.cell(160, 10, "Total cost", 1, 0, "R")
+    pdf.cell(40, 10, f"Rs.{total_cost}", 1, 1, "C")
+
+    print("before PDF downloaded")
+
+    # Save the PDF to a temporary file
+    pdf_filename = "bill.pdf"
+    pdf.output(f'static/{pdf_filename}')
+
+    # Serve the PDF file
+    send_file(f'static/{pdf_filename}', mimetype='application/pdf', as_attachment=True)
+    print("PDF downloaded")
+    return total_cost, pdf_filename
 
 upi_id="7488820018hhhg@ybl"
 def generate_qr(amount, upi_id, filename):
@@ -349,7 +369,11 @@ def generate_qr(amount, upi_id, filename):
     qr_img = qr.make_image(fill_color="black", back_color="white")
     
     # Save the image to a file
-    qr_img.save(filename)
+    filename = 'qr_code.png'
+    qr_img.save(f'static/{filename}')
+    send_file(f'static/{filename}', as_attachment=True)
+    print(f"QR code for payment of {amount} INR to UPI ID {upi_id} generated!")
+    return filename
 
 @app.route('/')
 def index():
@@ -370,11 +394,13 @@ def process_audio():
     translated_text = translate_text(audio_data)
     total_cost,bill_pdf = generate_bill(translated_text)
     qr_code = generate_qr(25, "7488820018hhhg@ybl",bill_pdf)  # Example: total_cost and UPI ID
-    return {
-        "translated_text": translated_text,
-        "bill_pdf": bill_pdf,
-        "qr_code": qr_code
-    }
+    print('Audio Processed successfully!')
+    
+    return redirect(url_for('qr_page'))
+
+@app.route('/qr_page')
+def qr_page():
+    return render_template('qr_page.html')
 
 @app.route('/download-bill')
 def download_bill():

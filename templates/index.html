@@ -1,12 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Recorder</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body {
+        padding-top: 50px;
+        text-align: center;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .btn {
+        margin-top: 10px;
+    }
+</style>
 </head>
 <body>
-    <h1>Welcome to the Index Page</h1>
-    <a href="/record">Record Audio</a>
+<div class="container">
+    <h1>Audio Recorder</h1>
+    <button id="startRecord" class="btn btn-primary">Start Recording</button>
+    <button id="stopRecord" class="btn btn-danger" disabled>Stop Recording</button>
+</div>
+
+<script>
+// Function to initialize audio recording
+function startRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+        const mediaRecorder = new MediaRecorder(stream);
+        const chunks = [];
+
+        mediaRecorder.ondataavailable = function(e) {
+            chunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = function() {
+            const blob = new Blob(chunks, { type: 'audio/wav' });
+
+            // Send recorded audio to server
+            sendAudioToServer(blob);
+        };
+
+        mediaRecorder.start();
+
+        document.getElementById('stopRecord').onclick = function() {
+            mediaRecorder.stop();
+            document.getElementById('startRecord').disabled = false;
+            document.getElementById('stopRecord').disabled = true;
+        };
+
+        document.getElementById('startRecord').disabled = true;
+        document.getElementById('stopRecord').disabled = false;
+    })
+    .catch(err => {
+        console.error('Error accessing microphone:', err);
+    });
+}
+
+// Function to send audio data to server
+function sendAudioToServer(audioBlob) {
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
+
+    fetch('/process_audio', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        // Handle response from server
+    })
+    .catch(error => {
+        console.error('Error sending audio to server:', error);
+    });
+}
+
+// Event listener for starting recording
+document.getElementById('startRecord').addEventListener('click', startRecording);
+</script>
 </body>
 </html>
