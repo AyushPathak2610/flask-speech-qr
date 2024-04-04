@@ -1,4 +1,6 @@
 flask
+re
+pandas
 wave
 requests
 qrcode
