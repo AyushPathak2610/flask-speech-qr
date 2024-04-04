@@ -191,6 +191,7 @@ def calculate_sum(sentence):
 bill = []
 
 def calculate_total_cost(sentence, prices):
+    bill = []
     total_cost = 0
     quantity = 0
     # Find numbers and product names in the sentence
@@ -393,9 +394,9 @@ def process_audio():
     save_audio(audio_data)
     translated_text = translate_text(audio_data)
     total_cost,bill_pdf = generate_bill(translated_text)
-    qr_code = generate_qr(25, "7488820018hhhg@ybl",bill_pdf)  # Example: total_cost and UPI ID
+    qr_code = generate_qr(total_cost, "8306097026@apl",bill_pdf)  # Example: total_cost and UPI ID
     print('Audio Processed successfully!')
-    
+    bill = []
     return redirect(url_for('qr_page'))
 
 @app.route('/qr_page')

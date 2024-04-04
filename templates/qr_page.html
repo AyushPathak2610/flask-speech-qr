@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Page</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         img {
             max-width: 100%;
@@ -11,14 +12,32 @@
             display: block;
             margin: auto;
         }
+        .btn-block {
+            width: 25%; /* Adjust the width as needed */
+        }
+        .col{
+            display:flex;
+            width:100%;
+            justify-content:center;
+        }
     </style>
 </head>
 <body>
-    <h1>QR Code for Payment</h1>
-    <img src="{{ url_for('static', filename='qr_code.png') }}" alt="QR Code">
-    <br>
-    <a href="{{ url_for('static', filename='bill.pdf') }}" download>Download Bill PDF</a>
-    <br>
-    <a href="{{ url_for('index') }}">Record again</a>
+    <div class="container">
+        <h1>QR Code for Payment</h1>
+        <img src="{{ url_for('static', filename='qr_code.png') }}" alt="QR Code">
+        <br>
+        <div class="row mt-3">
+            <div class="col">
+                <a href="{{ url_for('static', filename='bill.pdf') }}" class="btn btn-primary btn-block" download>Download Bill PDF</a>
+            </div>
+        </div>
+        <br>
+        <div class="row mt-2">
+            <div class="col">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary btn-block">Record again</a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
