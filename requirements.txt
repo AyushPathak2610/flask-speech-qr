@@ -8,4 +8,4 @@ qrcode
 Pillow
 matplotlib
 fpdf
-Gunicorn
+gunicorn
