@@ -12,8 +12,13 @@
             display: block;
             margin: auto;
         }
+        .heading{
+            text-align: center;
+            color: blue;
+        }
         .btn-block {
-            width: 25%; /* Adjust the width as needed */
+            width: 50%; /* Adjust the width as needed */
+            padding: 10px;
         }
         .col{
             display:flex;
@@ -24,12 +29,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>QR Code for Payment</h1>
+        <br>
+        <h1 class="heading">Scan to Pay</h1>
         <img src="{{ url_for('static', filename='qr_code.png') }}" alt="QR Code">
         <br>
         <div class="row mt-3">
             <div class="col">
-                <a href="{{ url_for('static', filename='bill.pdf') }}" class="btn btn-primary btn-block" download>Download Bill PDF</a>
+                <a href="{{ url_for('static', filename='bill.pdf') }}" class="btn btn-primary btn-block" download>Download Bill</a>
             </div>
         </div>
         <br>
